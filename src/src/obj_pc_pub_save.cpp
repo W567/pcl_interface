@@ -25,8 +25,8 @@ ObjPCPublisher_save::name_callback(const std_msgs::String &str)
     return;
   get_name = false;
   previous_name = str.data;
-  std::string path = ros::package::getPath("pcl_interface");
-  path += "/pcd/obj/pcd/" + str.data + ".pcd";
+  std::string path = ros::package::getPath("pcd_lib");
+  path += "/obj/pcd/" + str.data + ".pcd";
   ROS_WARN_STREAM("=================================================path: " << path);
   pnPtr input_tmp (new pn);
   pcl::io::loadPCDFile<pcl::PointNormal>(path, *input_tmp);
