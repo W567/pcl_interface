@@ -52,13 +52,6 @@ add_definitions(${PCL_DEFINITIONS})
 
 aux_source_directory(./src/src lib_src)
 
-add_executable(obj_pc_pub src/obj_pc_publisher.cpp ${lib_src})
-target_link_libraries(obj_pc_pub
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
-
 add_executable(ws_pc_pub src/ws_pc_publisher.cpp ${lib_src})
 target_link_libraries(ws_pc_pub
   ${catkin_LIBRARIES}
