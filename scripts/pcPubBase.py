@@ -28,8 +28,11 @@ class pcPubBase():
         rate = rospy.get_param("~rate", 10)
         self.rate = rospy.Rate(rate)
 
-        pkg_name = rospy.get_param("~pkg_name", "obj_models")
-        pkg_path = rospack.get_path(pkg_name)
+        if rospy.has_param("~pkg_name"):
+            pkg_name = rospy.get_param("~pkg_name")
+            pkg_path = rospack.get_path(pkg_name)
+        else:
+            pkg_path = ""
 
         pc_filenames = rospy.get_param("~pc_filenames", ["/obj/ycb_010_potted_meat_can.pcd",])
         pc_topics = rospy.get_param("~pc_topics", ["/hoge",])
