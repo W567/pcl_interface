@@ -30,34 +30,62 @@ class pcPubBase():
 
         if rospy.has_param("~pkg_name"):
             pkg_name = rospy.get_param("~pkg_name")
-            pkg_path = rospack.get_path(pkg_name)
+            self.pkg_path = rospack.get_path(pkg_name)
         else:
-            pkg_path = ""
+            self.pkg_path = ""
 
-        pc_filenames = rospy.get_param("~pc_filenames", ["/obj/ycb_010_potted_meat_can.pcd",])
-        pc_topics = rospy.get_param("~pc_topics", ["/hoge",])
-        pc_frames = rospy.get_param("~pc_frames", ["object",])
-        pc_colors = rospy.get_param("~pc_colors", [[1.0, 0.0, 0.0],])
+        if rospy.has_param("~pc_filenames"):
+            self.pc_filenames = rospy.get_param("~pc_filenames")
+        elif rospy.has_param("~pc_filename_prefix"):
+            self.pc_filename_prefix = rospy.get_param("~pc_filename_prefix")
+            self.pc_filenames = []
+        else:
+            rospy.logerr("[pcPubBase] No pc_filenames or pc_filename_prefix")
 
-        assert len(pc_filenames) == len(pc_topics) == len(pc_frames) == len(pc_colors), \
+        if rospy.has_param("~pc_topics"):
+            self.pc_topics = rospy.get_param("~pc_topics")
+        elif rospy.has_param("~pc_topic_prefix"):
+            self.pc_topic_prefix = rospy.get_param("~pc_topic_prefix")
+            self.pc_topics = []
+        else:
+            rospy.logerr("[pcPubBase] No pc_topics or pc_topic_prefix")
+
+        if rospy.has_param("~pc_frame"):
+            self.pc_frame = rospy.get_param("~pc_frame")
+        else:
+            rospy.logerr("[pcPubBase] No pc_frame")
+        
+        self.pc_colors = rospy.get_param("~pc_colors", [[1.0, 0.0, 0.0],
+                                                        [0.0, 1.0, 0.0],
+                                                        [0.0, 0.0, 1.0],
+                                                        [1.0, 1.0, 0.0],
+                                                        [1.0, 0.0, 1.0],
+                                                        [0.0, 1.0, 1.0],
+                                                        [1.0, 1.0, 1.0]])
+
+        assert len(self.pc_filenames) == len(self.pc_topics) <= len(self.pc_colors), \
             "[pcPubBase]length imcompatible"
+        
+        self.pc_colors = self.pc_colors[:len(self.pc_filenames)]
+        
+        self.tf_listener = tf.TransformListener()
+        rospy.loginfo("[pcPubBase] Initialized")
 
+
+    def init_pc(self):
         self.pcd_list = []
         self.pc_pub_list = []
         self.pc_head_list = []
-        for i, pc_topic in enumerate(pc_topics):
-            pcd = o3d.io.read_point_cloud(pkg_path + pc_filenames[i])
-            if min(pc_colors[i]) >= 0 and max(pc_colors[i]) <= 1:
-                pcd.paint_uniform_color(pc_colors[i])
+        for i, pc_topic in enumerate(self.pc_topics):
+            pcd = o3d.io.read_point_cloud(self.pkg_path + self.pc_filenames[i])
+            if min(self.pc_colors[i]) >= 0 and max(self.pc_colors[i]) <= 1:
+                pcd.paint_uniform_color(self.pc_colors[i])
             self.pcd_list.append(pcd)
             pc_pub = rospy.Publisher(pc_topic, PointCloud2, queue_size=1, latch=True)
             self.pc_pub_list.append(pc_pub)
             pc_header = Header()
-            pc_header.frame_id = pc_frames[i]
+            pc_header.frame_id = self.pc_frame
             self.pc_head_list.append(pc_header)
-        
-        self.tf_listener = tf.TransformListener()
-        rospy.loginfo("[pcPubBase] Initialized")
 
 
     def comb_rgb(self, rgb):
@@ -167,6 +195,7 @@ class pcPubBase():
 
 
     def execute(self):
+        self.init_pc()
         while not rospy.is_shutdown():
             for pcd, head, pub in zip(self.pcd_list, self.pc_head_list, self.pc_pub_list):
                 pcd = self.pcd_trans(pcd)
