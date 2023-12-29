@@ -64,18 +64,17 @@ class pcPubBase():
                                                         [1.0, 1.0, 1.0]])
 
         assert len(self.pc_filenames) == len(self.pc_topics) <= len(self.pc_colors), \
-            "[pcPubBase]length imcompatible"
-        
-        self.pc_colors = self.pc_colors[:len(self.pc_filenames)]
+            "[pcPubBase] Length imcompatible"
         
         self.tf_listener = tf.TransformListener()
+
+        self.pcd_list = []
+        self.pc_pub_list = []
+        self.pc_head_list = []
         rospy.loginfo("[pcPubBase] Initialized")
 
 
     def init_pc(self):
-        self.pcd_list = []
-        self.pc_pub_list = []
-        self.pc_head_list = []
         for i, pc_topic in enumerate(self.pc_topics):
             pcd = o3d.io.read_point_cloud(self.pkg_path + self.pc_filenames[i])
             if min(self.pc_colors[i]) >= 0 and max(self.pc_colors[i]) <= 1:
