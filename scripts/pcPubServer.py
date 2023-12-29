@@ -3,7 +3,7 @@ import rospy
 import open3d as o3d
 from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2
-from pcl_interface.srv import PreProPCPub, PreProPCPubResponse
+from pcl_interface.srv import num, numResponse
 
 from pcPubBase import pcPubBase
 
@@ -11,21 +11,37 @@ class pcPubServer(pcPubBase):
 
     def __init__(self):
         super().__init__()
-
-        self.server = rospy.Service('ws_prepro_pub', PreProPCPub, self.pubCB)
+        srv_name = rospy.get_param("~srv_name")
+        self.is_single = rospy.get_param("~is_single", False)
+        self.server = rospy.Service(srv_name, num, self.pubCB)
 
     def pubCB(self, req):
-        for i in range(req.num):
-            pcd = o3d.io.read_point_cloud(self.pkg_path + self.pc_filename_prefix + str(i) + ".pcd")
+        if self.is_single:
+            idxs = [req.num]
+        else:
+            idxs = range(req.num)
+        
+        if self.pc_topics == [] and self.pc_topic_prefix != None:
+            pc_topics = [self.pc_topic_prefix + str(i) for i in idxs]
+        elif self.pc_topic_prefix == None and self.pc_topics != []:
+            pc_topics = self.pc_topics
+        else:
+            rospy.logerr("[pcPubServer] No pc_topics or pc_topic_prefix given")
+            return numResponse(False)
+        
+        assert len(pc_topics) == len(idxs), "[pcPubServer] pc_topics and idxs have different lengths"
+
+        for i, id in enumerate(idxs):
+            pcd = o3d.io.read_point_cloud(self.pkg_path + self.pc_filename_prefix + str(id) + ".pcd")
             if min(self.pc_colors[i]) >= 0 and max(self.pc_colors[i]) <= 1:
                 pcd.paint_uniform_color(self.pc_colors[i])
             self.pcd_list.append(pcd)
-            pc_pub = rospy.Publisher(self.pc_topic_prefix + str(i), PointCloud2, queue_size=1, latch=True)
+            pc_pub = rospy.Publisher(pc_topics[i], PointCloud2, queue_size=1, latch=True)
             self.pc_pub_list.append(pc_pub)
             pc_header = Header()
             pc_header.frame_id = self.pc_frame
             self.pc_head_list.append(pc_header)
-        return PreProPCPubResponse(True)
+        return numResponse(True)
 
     def execute(self):
         while not rospy.is_shutdown():
