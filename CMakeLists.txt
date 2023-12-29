@@ -24,8 +24,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_service_files(
   FILES
-  PreProPCPub.srv
-  TipConPub.srv
+  num.srv
+  poseTF.srv
 )
 
 generate_messages(
@@ -51,34 +51,6 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 aux_source_directory(./src/src lib_src)
-
-add_executable(ws_pc_pub src/ws_pc_publisher.cpp ${lib_src})
-target_link_libraries(ws_pc_pub
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
-  
-add_executable(ws_prepro_pub_server src/ws_prepro_pub_server.cpp ${lib_src})
-target_link_libraries(ws_prepro_pub_server
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
-
-add_executable(tip_con_pub_server src/tip_con_pub_server.cpp ${lib_src})
-target_link_libraries(tip_con_pub_server
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
-
-add_executable(pc_pub src/pc_publisher.cpp ${lib_src})
-target_link_libraries(pc_pub
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
 
 add_executable(obj_pc_pub_save src/obj_pc_publisher_save.cpp ${lib_src})
 target_link_libraries(obj_pc_pub_save
