@@ -6,9 +6,6 @@ class pcPublisher(pcPubBase):
     def __init__(self):
         super().__init__()
 
-    def pcd_trans(self, pcd):
-        return pcd
-
 def main():
     pub = pcPublisher()
     pub.execute()
