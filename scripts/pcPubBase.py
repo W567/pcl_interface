@@ -36,6 +36,7 @@ class pcPubBase():
 
         if rospy.has_param("~pc_filenames"):
             self.pc_filenames = rospy.get_param("~pc_filenames")
+            self.pc_filename_prefix = None
         elif rospy.has_param("~pc_filename_prefix"):
             self.pc_filename_prefix = rospy.get_param("~pc_filename_prefix")
             self.pc_filenames = []
@@ -44,6 +45,7 @@ class pcPubBase():
 
         if rospy.has_param("~pc_topics"):
             self.pc_topics = rospy.get_param("~pc_topics")
+            self.pc_topic_prefix = None
         elif rospy.has_param("~pc_topic_prefix"):
             self.pc_topic_prefix = rospy.get_param("~pc_topic_prefix")
             self.pc_topics = []
@@ -63,8 +65,9 @@ class pcPubBase():
                                                         [0.0, 1.0, 1.0],
                                                         [1.0, 1.0, 1.0]])
 
-        assert len(self.pc_filenames) == len(self.pc_topics) <= len(self.pc_colors), \
-            "[pcPubBase] Length imcompatible"
+        assert len(self.pc_filenames) <= len(self.pc_colors) and \
+               len(self.pc_topics) <= len(self.pc_colors), \
+            "[pcPubBase] Color length imcompatible"
         
         self.tf_listener = tf.TransformListener()
 
