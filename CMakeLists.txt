@@ -50,11 +50,3 @@ include_directories(
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-aux_source_directory(./src/src lib_src)
-
-add_executable(obj_pc_pub_save src/obj_pc_publisher_save.cpp ${lib_src})
-target_link_libraries(obj_pc_pub_save
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
