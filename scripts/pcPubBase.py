@@ -25,7 +25,7 @@ class pcPubBase():
     def __init__(self):
         rospy.init_node('pcPubBase', anonymous=True)
 
-        rate = rospy.get_param("~rate", 10)
+        rate = rospy.get_param("~rate", 30)
         self.rate = rospy.Rate(rate)
 
         if rospy.has_param("~pc_filenames"):
