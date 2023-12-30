@@ -46,7 +46,7 @@ class pcTransPublisher(pcPubBase):
         self.br.sendTransform((translation[0], translation[1], translation[2]),
                               (quat[0], quat[1], quat[2], quat[3]),
                               rospy.Time.now(),
-                              "obj_bot",
+                              "obj_bot",  # TODO add to rosparam
                               self.parent_frame)
 
         return pcd
