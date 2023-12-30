@@ -25,6 +25,9 @@ class pcPubServer(pcPubBase):
             pc_topics = [self.pc_topic_prefix + str(i) for i in idxs]
         elif self.pc_topic_prefix == None and self.pc_topics != []:
             pc_topics = self.pc_topics
+        elif self.pc_topic_prefix != None and self.pc_topics != []:
+            pc_topics = self.pc_topics
+            rospy.logwarn("[pcPubServer] Both pc_topics and pc_topic_prefix given. Using pc_topics")
         else:
             rospy.logerr("[pcPubServer] No pc_topics or pc_topic_prefix given")
             return numResponse(False)
@@ -32,7 +35,7 @@ class pcPubServer(pcPubBase):
         assert len(pc_topics) == len(idxs), "[pcPubServer] pc_topics and idxs have different lengths"
 
         for i, id in enumerate(idxs):
-            pcd = o3d.io.read_point_cloud(self.pkg_path + self.pc_filename_prefix + str(id) + ".pcd")
+            pcd = o3d.io.read_point_cloud(self.pc_filename_prefix + str(id) + ".pcd")
             if min(self.pc_colors[i]) >= 0 and max(self.pc_colors[i]) <= 1:
                 pcd.paint_uniform_color(self.pc_colors[i])
             self.pcd_list.append(pcd)

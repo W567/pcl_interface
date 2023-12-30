@@ -28,12 +28,6 @@ class pcPubBase():
         rate = rospy.get_param("~rate", 10)
         self.rate = rospy.Rate(rate)
 
-        if rospy.has_param("~pkg_name"):
-            pkg_name = rospy.get_param("~pkg_name")
-            self.pkg_path = rospack.get_path(pkg_name)
-        else:
-            self.pkg_path = ""
-
         if rospy.has_param("~pc_filenames"):
             self.pc_filenames = rospy.get_param("~pc_filenames")
             self.pc_filename_prefix = None
@@ -48,7 +42,7 @@ class pcPubBase():
             self.pc_topic_prefix = None
         elif rospy.has_param("~pc_topic_prefix"):
             self.pc_topic_prefix = rospy.get_param("~pc_topic_prefix")
-            self.pc_topics = []
+            self.pc_topics = [self.pc_topic_prefix + str(i) for i in range(len(self.pc_filenames))]
         else:
             rospy.logerr("[pcPubBase] No pc_topics or pc_topic_prefix")
 
@@ -79,7 +73,7 @@ class pcPubBase():
 
     def init_pc(self):
         for i, pc_topic in enumerate(self.pc_topics):
-            pcd = o3d.io.read_point_cloud(self.pkg_path + self.pc_filenames[i])
+            pcd = o3d.io.read_point_cloud(self.pc_filenames[i])
             if min(self.pc_colors[i]) >= 0 and max(self.pc_colors[i]) <= 1:
                 pcd.paint_uniform_color(self.pc_colors[i])
             self.pcd_list.append(pcd)
