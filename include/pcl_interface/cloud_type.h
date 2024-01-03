@@ -11,7 +11,7 @@
   union EIGEN_ALIGN16 { \
     float angle[1]; \
     struct { \
-      float a1; \
+      float a0; \
     }; \
   };
 
@@ -47,17 +47,17 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (PN2V1A,
                                    (float, zx, zx)
                                    (float, zy, zy)
                                    (float, zz, zz)
-                                   (float, a1, a1)
+                                   (float, a0, a0)
 )
 
 #define PCL_ADD_UNION_A4 \
   union EIGEN_ALIGN16 { \
     float angle[4]; \
     struct { \
+      float a0; \
       float a1; \
       float a2; \
       float a3; \
-      float a4; \
     }; \
   };
 
@@ -93,21 +93,21 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (PN2V4A,
                                    (float, zx, zx)
                                    (float, zy, zy)
                                    (float, zz, zz)
+                                   (float, a0, a0)
                                    (float, a1, a1)
                                    (float, a2, a2)
                                    (float, a3, a3)
-                                   (float, a4, a4)
 )
 
 #define PCL_ADD_UNION_A5 \
   union EIGEN_ALIGN16 { \
     float angle[5]; \
     struct { \
+      float a0; \
       float a1; \
       float a2; \
       float a3; \
       float a4; \
-      float a5; \
     }; \
   };
 
@@ -143,11 +143,11 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (PN2V5A,
                                    (float, zx, zx)
                                    (float, zy, zy)
                                    (float, zz, zz)
+                                   (float, a0, a0)
                                    (float, a1, a1)
                                    (float, a2, a2)
                                    (float, a3, a3)
                                    (float, a4, a4)
-                                   (float, a5, a5)
 )
 
 typedef pcl::PointCloud<pcl::PointXYZ>::Ptr  xyzPtr;
