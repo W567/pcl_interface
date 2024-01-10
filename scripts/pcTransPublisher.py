@@ -13,8 +13,8 @@ class pcTransPublisher(pcPubBase):
 
     def __init__(self):
         super().__init__()
-        self.child_frame = rospy.get_param("~child_frame", "object")
-        self.parent_frame = rospy.get_param("~parent_frame", "base")
+        self.child_frame = rospy.get_param("~child_frame", "base")
+        self.parent_frame = rospy.get_param("~parent_frame", "object")
         self.tf_listener.waitForTransform(self.parent_frame, self.child_frame, rospy.Time(), rospy.Duration(5.0))
 
         self.palm_rot = np.eye(4)
