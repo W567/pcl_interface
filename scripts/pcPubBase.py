@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import tf
 import rospy
+import struct
 import numpy as np
 import open3d as o3d
 from std_msgs.msg import Header
@@ -133,7 +134,12 @@ class pcPubBase():
 
 
     def split_rgb(self, rgb):
-        rgb = np.nan_to_num(rgb).astype(np.uint32)
+        rgb = np.nan_to_num(rgb)
+        # rgb is wrongly interpreted as float32 in cpp, resolve it by reinterpreting it as uint32
+        if type(rgb[0][0][0]) == np.float64:
+            rgb = np.array([[[struct.unpack('I', struct.pack('f', value[0]))[0]] for value in rgb[0]]])
+        else: # TODO maybe other types?
+            rgb = rgb.astype(np.uint32)
         r = (rgb & 0x00FF0000) >> 16
         g = (rgb & 0x0000FF00) >> 8
         b = (rgb & 0x000000FF)
