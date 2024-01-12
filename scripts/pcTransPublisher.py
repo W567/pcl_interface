@@ -16,7 +16,9 @@ class pcTransPublisher(pcPubBase):
         super().__init__()
         self.child_frame = rospy.get_param("~child_frame", "base")
         self.parent_frame = rospy.get_param("~parent_frame", "object")
-        self.tf_listener.waitForTransform(self.parent_frame, self.child_frame, rospy.Time(), rospy.Duration(5.0))
+        rospy.logwarn("[pcTransPublisher] waiting frame: %s, %s", self.child_frame, self.parent_frame)
+        self.tf_listener.waitForTransform(self.parent_frame, self.child_frame, rospy.Time(), rospy.Duration(100000.0))
+        rospy.logwarn("[pcTransPublisher] frame found")
 
         # tf from base to palm
         self.palm_rot = np.eye(4)
