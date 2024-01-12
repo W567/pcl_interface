@@ -77,6 +77,22 @@ extractPlane(
   extractCloud<T>(input, inliers_plane, output, true);
 }
 
+template<typename T>
+void
+extractPlane(
+    const typename pcl::PointCloud<T>::Ptr& input,
+    const typename pcl::PointCloud<T>::Ptr& output,
+    const typename pcl::PointCloud<T>::Ptr& plane,
+    float thre)
+{
+  pcl::PointCloud<pcl::Normal>::Ptr normal (new pcl::PointCloud<pcl::Normal>);
+  estimateNormal<T>(input, normal, 50);
+  pcl::ModelCoefficients::Ptr coefficients_plane (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers_plane (new pcl::PointIndices);
+  segmentPlane<T>(input, normal, coefficients_plane, inliers_plane, thre);
+  extractCloud<T>(input, inliers_plane, output, true);
+  extractCloud<T>(input, inliers_plane, plane, false);
+}
 
 template<typename T>
 void

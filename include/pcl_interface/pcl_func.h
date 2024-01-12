@@ -60,6 +60,14 @@ extractPlane(
 
 template<typename T>
 void
+extractPlane(
+    const typename pcl::PointCloud<T>::Ptr& input,
+    const typename pcl::PointCloud<T>::Ptr& output,
+    const typename pcl::PointCloud<T>::Ptr &plane,
+    float thre);
+
+template<typename T>
+void
 extractCloud(
   const typename pcl::PointCloud<T>::Ptr& input,
   const typename pcl::PointIndices::Ptr inliers,
