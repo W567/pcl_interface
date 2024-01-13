@@ -24,6 +24,10 @@ class pc2palmPublisher(pcPubBase):
 
         self.br = tf.TransformBroadcaster()
 
+        min_inf = np.finfo(np.float32).min
+        max_inf = np.finfo(np.float32).max
+        self.min_bound = np.array([min_inf, 0.0, min_inf])
+        self.max_bound = np.array([max_inf, max_inf, max_inf])
 
     def pcd_trans(self, pcd):
 
@@ -45,6 +49,22 @@ class pc2palmPublisher(pcPubBase):
         trans = self.palm_rot @ trans
         # pcd under object_bot/palm coordinate system
         pcd = deepcopy(pcd).transform(trans)
+
+        # pcd has been transformed to palm coordinate system
+        points_np = np.asarray(pcd.points)
+        mask = np.all((self.min_bound <= points_np) & (points_np <= self.max_bound), axis=1)
+        cropped_points_np = points_np[mask]
+        pcd.points = o3d.utility.Vector3dVector(cropped_points_np)
+        if pcd.has_colors:
+            colors_np = np.asarray(pcd.colors)
+            if colors_np.size != 0:
+                cropped_colors_np = colors_np[mask]
+                pcd.colors = o3d.utility.Vector3dVector(cropped_colors_np)
+        if pcd.has_normals:
+            normals_np = np.asarray(pcd.normals)
+            if normals_np.size != 0:
+                cropped_normals_np = normals_np[mask]
+                pcd.normals = o3d.utility.Vector3dVector(cropped_normals_np)
 
         # tf from base to object_bot
         trans = np.linalg.inv(trans)
