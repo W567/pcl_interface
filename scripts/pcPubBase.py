@@ -184,24 +184,26 @@ class pcPubBase():
             idx_nz = np.where(field_names == 'normal_z')[0]
             idx_nor = np.concatenate((idx_nx, idx_ny, idx_nz), axis=-1)
             nor = np_cloud[:, :, idx_nor]
+            np_cloud_dict['nor'] = nor
         else:
-            rospy.logwarn_once('[pcPubBase] Received cloud without point normal, estimating')
+            rospy.logwarn_once('[pcPubBase] Received cloud without point normal')
+            # rospy.logwarn_once('[pcPubBase] Received cloud without point normal, estimating')
 
-            # TODO normal estimation necessary?
-            try:
-                (trans,rot) = self.tf_listener.lookupTransform(self.obj_frame, self.cam_frame, rospy.Time(0))
-                rospy.logwarn_once("[pcPubBase] camera @ [%.3f, %.3f, %.3f]", trans[0], trans[1], trans[2])
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                rospy.logerr_once("[pcPubBase] Can't get tf information, using [0, 0, 0]")
-                trans = np.zeros((3))
+            # # TODO normal estimation necessary?
+            # try:
+            #     (trans,rot) = self.tf_listener.lookupTransform(self.obj_frame, self.cam_frame, rospy.Time(0))
+            #     rospy.logwarn_once("[pcPubBase] camera @ [%.3f, %.3f, %.3f]", trans[0], trans[1], trans[2])
+            # except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            #     rospy.logerr_once("[pcPubBase] Can't get tf information, using [0, 0, 0]")
+            #     trans = np.zeros((3))
 
-            pcd = o3d.geometry.PointCloud()
-            pcd.points = o3d.utility.Vector3dVector(xyz[0])
-            pcd.estimate_normals(
-                search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.05, max_nn=30))
-            pcd.orient_normals_towards_camera_location(camera_location=trans)
-            nor = np.asarray([pcd.normals])
-        np_cloud_dict['nor'] = nor
+            # pcd = o3d.geometry.PointCloud()
+            # pcd.points = o3d.utility.Vector3dVector(xyz[0])
+            # pcd.estimate_normals(
+            #     search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.05, max_nn=30))
+            # pcd.orient_normals_towards_camera_location(camera_location=trans)
+            # nor = np.asarray([pcd.normals])
+            # np_cloud_dict['nor'] = nor
         
         return np_cloud_dict
 
