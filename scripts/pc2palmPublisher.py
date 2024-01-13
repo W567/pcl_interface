@@ -2,6 +2,7 @@
 import tf
 import rospy
 import numpy as np
+import open3d as o3d
 from copy import deepcopy
 from pcPubBase import pcPubBase
 from scipy.spatial.transform import Rotation as R
@@ -15,6 +16,7 @@ class pc2palmPublisher(pcPubBase):
     def __init__(self):
         super().__init__()
         self.base_frame = rospy.get_param('~base_frame', 'base')
+        self.desk_frame = rospy.get_param('~desk_frame', 'desk_frame')
 
         # tf from base to palm
         self.palm_rot = np.eye(4)
@@ -24,9 +26,18 @@ class pc2palmPublisher(pcPubBase):
 
 
     def pcd_trans(self, pcd):
+
+        (desk_t, desk_r) = self.tf_listener.lookupTransform(self.base_frame, self.desk_frame,
+                                                            rospy.Time(0))
+        desk_z = desk_t[2]
+
         # pcd under base coordinate system
         center = -pcd.get_center()
-        center[2] = -pcd.get_min_bound()[2]
+        obj_min = pcd.get_min_bound()[2]
+        if obj_min < desk_z:
+            center[2] = -desk_z
+        else:
+            center[2] = -obj_min
         # tf from object_bot to base
         trans = np.eye(4)
         trans[:3, 3] = center
