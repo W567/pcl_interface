@@ -80,8 +80,12 @@ class pcPubBase():
             return
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(np_cloud_dict['xyz'][0])
-        if 'rgb' in np_cloud_dict.keys():
-            pcd.colors = o3d.utility.Vector3dVector(np_cloud_dict['rgb'][0])
+
+        if min(self.pc_colors[i]) >= 0 and max(self.pc_colors[i]) <= 1:
+            pcd.paint_uniform_color(self.pc_colors[i])
+        else:
+            if 'rgb' in np_cloud_dict.keys():
+                pcd.colors = o3d.utility.Vector3dVector(np_cloud_dict['rgb'][0])
         if 'nor' in np_cloud_dict.keys():
             pcd.normals = o3d.utility.Vector3dVector(np_cloud_dict['nor'][0])
         self.pcd_list[i] = pcd
