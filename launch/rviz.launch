@@ -2,17 +2,29 @@
   <node pkg="tf" type="static_transform_publisher" name="camera_transform_publisher"
         args="0.0 0.0 0.0 0.0 0.0 0.0 base map 100" />
 
-  <arg name="pc_filenames" value="[/launch/example.pcd, ]" />
+  <arg name="pc_filenames" value="[$(find pcl_interface)/launch/example.pcd, ]" />
   <arg name="pc_topics" value="[example, ]" />
   <arg name="pc_frame" value="base" />
   <arg name="pc_colors" value="[[-1, 0, 0], ]" />
   <node name="pcPub" pkg="pcl_interface" type="pcPublisher.py" output="screen">
-    <param name="pkg_name" value="pcl_interface" />
     <param name="pc_frame" value="$(arg pc_frame)" />
     <rosparam param="pc_filenames" subst_value="True">$(arg pc_filenames)</rosparam>
     <rosparam param="pc_topics" subst_value="True">$(arg pc_topics)</rosparam>
     <rosparam param="pc_colors" subst_value="True">$(arg pc_colors)</rosparam>
   </node>
+
+
+  <arg name="pc_topics_t" value="[filtered, ]" />
+  <arg name="sub_pc_topics" value="[example, ]" />
+  <arg name="pc_colors_t" value="[[1, 0, 0], ]" />
+  <node name="pcFiilter" pkg="pcl_interface" type="pcCurvProcessor.py" output="screen">
+    <param name="pc_frame" value="$(arg pc_frame)" />
+    <param name="curv_threshold" value="0.6" />
+    <rosparam param="sub_pc_topics" subst_value="True">$(arg sub_pc_topics)</rosparam>
+    <rosparam param="pc_topics" subst_value="True">$(arg pc_topics_t)</rosparam>
+    <rosparam param="pc_colors" subst_value="True">$(arg pc_colors_t)</rosparam>
+  </node>
+
 
   <node
     name="rviz"
