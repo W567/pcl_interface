@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import tf
 import rospy
-import struct
 import numpy as np
 import open3d as o3d
 from pcBase import *
@@ -206,7 +205,7 @@ class pcPubBase():
         return pc2.create_cloud(header, fields, np_cloud.flatten())
 
 
-    def pcd_trans(self, pcd):
+    def pcd_process(self, pcd):
         return pcd
 
 
@@ -216,7 +215,7 @@ class pcPubBase():
             for pcd, head, pub in zip(self.pcd_list, self.pc_head_list, self.pc_pub_list):
                 if pcd == None:
                     continue
-                pcd = self.pcd_trans(pcd)
+                pcd = self.pcd_process(pcd)
                 pc_msg = self.o3d2pc2(pcd, head)
                 pub.publish(pc_msg)
 

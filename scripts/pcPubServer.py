@@ -49,7 +49,7 @@ class pcPubServer(pcPubBase):
     def execute(self):
         while not rospy.is_shutdown():
             for pcd, head, pub in zip(self.pcd_list, self.pc_head_list, self.pc_pub_list):
-                pcd = self.pcd_trans(pcd)
+                pcd = self.pcd_process(pcd)
                 pc_msg = self.o3d2pc2(pcd, head)
                 pub.publish(pc_msg)
 

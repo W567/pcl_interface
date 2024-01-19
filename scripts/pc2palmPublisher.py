@@ -2,7 +2,6 @@
 import tf
 import rospy
 import numpy as np
-import open3d as o3d
 from copy import deepcopy
 from pcPubBase import pcPubBase
 from scipy.spatial.transform import Rotation as R
@@ -23,7 +22,7 @@ class pc2palmPublisher(pcPubBase):
 
         self.br = tf.TransformBroadcaster()
 
-    def pcd_trans(self, pcd):
+    def pcd_process(self, pcd):
         # pcd under base coordinate system
         center = -pcd.get_center()
         center[2] = -pcd.get_min_bound()[2]

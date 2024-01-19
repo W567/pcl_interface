@@ -55,7 +55,7 @@ class pc2basePublisher(pcPubBase):
                               self.obj_base_frame)
 
 
-    def pcd_trans(self, pcd):
+    def pcd_process(self, pcd):
         pcd = deepcopy(pcd).transform(self.base2obj)
         return pcd
 
