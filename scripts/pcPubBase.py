@@ -4,24 +4,15 @@ import rospy
 import struct
 import numpy as np
 import open3d as o3d
+from pcBase import *
 from std_msgs.msg import Header
 from sensor_msgs import point_cloud2 as pc2
-from sensor_msgs.msg import PointCloud2, PointField
+from sensor_msgs.msg import PointCloud2
 
 import rospkg
 rospack = rospkg.RosPack()
 
-field = lambda name, id : PointField(name=name, offset=4*id, datatype=PointField.FLOAT32, count=1)
-rgb_field = lambda id : PointField(name='rgb', offset=4*id, datatype=PointField.UINT32, count=1)
-
 class pcPubBase():
-
-    xyz_names = ['x', 'y', 'z']
-    nor_names = ['normal_x', 'normal_y', 'normal_z', 'curvature']
-    xyz_fields = [field(name, id) for id, name in enumerate(xyz_names)]
-    xyz_nor_fields = [field(name, id) for id, name in enumerate(xyz_names + nor_names)]
-    xyz_rgb_fields = [field(name, id) for id, name in enumerate(xyz_names)] + [rgb_field(3)]
-    xyz_nor_rgb_fields = [field(name, id) for id, name in enumerate(xyz_names + nor_names)] + [rgb_field(7)]
 
     def __init__(self):
         rospy.init_node('pcPubBase', anonymous=True)
@@ -127,29 +118,6 @@ class pcPubBase():
         self.init_pc_pub()
 
 
-    def comb_rgb(self, rgb):
-        rgb = (rgb * 255).astype(np.uint32)
-        comb_rgb = (rgb[:, 0] << 16) + (rgb[:, 1] << 8) + rgb[:, 2]
-        return comb_rgb
-
-
-    def split_rgb(self, rgb):
-        rgb = np.nan_to_num(rgb)
-        # rgb is wrongly interpreted as float32 in cpp, resolve it by reinterpreting it as uint32
-        if type(rgb[0][0][0]) == np.float64:
-            rgb = np.array([[[struct.unpack('I', struct.pack('f', value[0]))[0]] for value in rgb[0]]])
-        else: # TODO maybe other types?
-            rgb = rgb.astype(np.uint32)
-        r = (rgb & 0x00FF0000) >> 16
-        g = (rgb & 0x0000FF00) >> 8
-        b = (rgb & 0x000000FF)
-        r = r.astype(np.float32) / 255.0
-        g = g.astype(np.float32) / 255.0
-        b = b.astype(np.float32) / 255.0
-        split_rgb = np.concatenate((r, g, b), axis=-1)
-        return split_rgb
-
-
     def pc22np(self, ros_cloud):
         field_names=np.array([field.name for field in ros_cloud.fields])
         np_cloud = np.array([list(pc2.read_points(ros_cloud, skip_nans=False, field_names=field_names))])
@@ -172,8 +140,7 @@ class pcPubBase():
         if 'rgb' in field_names:
             idx_rgb = np.where(field_names == 'rgb')[0]
             rgb = np_cloud[:, :, idx_rgb]
-            split_rgb = self.split_rgb(rgb)
-            np_cloud_dict['rgb'] = split_rgb
+            np_cloud_dict['rgb'] = split_rgb(rgb)
         else:
             rospy.logwarn_once('[pcPubBase] Received cloud without point color')
 
@@ -211,27 +178,27 @@ class pcPubBase():
     def o3d2pc2(self, pcd, header):
         positions = np.asarray(pcd.points)
         if pcd.has_colors():
-            colors = self.comb_rgb(np.asarray(pcd.colors))
+            colors = comb_rgb(np.asarray(pcd.colors))
         if pcd.has_normals():
             normals = np.asarray(pcd.normals)
             curvatures = np.zeros_like(normals[:, 0])
 
         if pcd.has_colors() and pcd.has_normals():
-            fields = self.xyz_nor_rgb_fields
+            fields = xyz_nor_rgb_fields
             np_cloud = np.core.records.fromarrays([positions[:, 0], positions[:, 1], positions[:, 2],
                                                    normals[:, 0], normals[:, 1], normals[:, 2], curvatures,
                                                    colors], names='x,y,z,normal_x,normal_y,normal_z,curvature, rgb')
         elif pcd.has_colors() and not pcd.has_normals():
-            fields = self.xyz_rgb_fields
+            fields = xyz_rgb_fields
             np_cloud = np.core.records.fromarrays([positions[:, 0], positions[:, 1], positions[:, 2],
                                                    colors], names='x,y,z,rgb')
         elif not pcd.has_colors() and pcd.has_normals():
-            fields = self.xyz_nor_fields
+            fields = xyz_nor_fields
             np_cloud = np.core.records.fromarrays([positions[:, 0], positions[:, 1], positions[:, 2],
                                                    normals[:, 0], normals[:, 1], normals[:, 2], curvatures],
                                                    names='x,y,z,normal_x,normal_y,normal_z, curvature')
         else:
-            fields = self.xyz_fields
+            fields = xyz_fields
             np_cloud = np.core.records.fromarrays([positions[:, 0], positions[:, 1], positions[:, 2]], 
                                                    names='x,y,z')
         
