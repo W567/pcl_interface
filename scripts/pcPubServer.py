@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+from pcBase import *
 import open3d as o3d
 from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2
@@ -50,7 +51,7 @@ class pcPubServer(pcPubBase):
         while not rospy.is_shutdown():
             for pcd, head, pub in zip(self.pcd_list, self.pc_head_list, self.pc_pub_list):
                 pcd = self.pcd_process(pcd)
-                pc_msg = self.o3d2pc2(pcd, head)
+                pc_msg = o3d2pc2(pcd, head)
                 pub.publish(pc_msg)
 
             self.rate.sleep()
