@@ -69,7 +69,7 @@ class pcPubBase():
 
     def init_pc_sub(self):
         for i, pc_topic in enumerate(self.sub_pc_topics):
-            pc_sub = rospy.Subscriber(pc_topic, PointCloud2, self.pc_sub_cb, callback_args=i)
+            pc_sub = rospy.Subscriber(pc_topic, PointCloud2, self.pc_sub_cb, callback_args=i, queue_size=1)
             self.pc_sub_list.append(pc_sub)
             self.pcd_list.append(None)
 
