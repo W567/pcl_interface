@@ -26,11 +26,13 @@ add_service_files(
   FILES
   num.srv
   poseTF.srv
+  curvFilter.srv
 )
 
 generate_messages(
   DEPENDENCIES
   geometry_msgs
+  sensor_msgs
 )
 
 catkin_package(

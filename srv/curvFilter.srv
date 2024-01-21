@@ -1,0 +1,4 @@
+sensor_msgs/PointCloud2 input_pcd
+float32 threshold
+---
+sensor_msgs/PointCloud2 output_pcd
