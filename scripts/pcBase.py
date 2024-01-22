@@ -34,7 +34,7 @@ Output: split_rgb numpy array with shape (n, 3)    splitted into r, g, b
 def split_rgb(rgb):
     rgb = np.nan_to_num(rgb)
     # rgb is wrongly interpreted as float32 in cpp, resolve it by reinterpreting it as uint32
-    if type(rgb[0][0][0]) == np.float64:
+    if type(rgb[0][0][0]) == np.float64:  # TODO from python side the data type seems also to be float64
         rgb = np.array([[[struct.unpack('I', struct.pack('f', value[0]))[0]] for value in rgb[0]]])
     else: # TODO maybe other types?
         rgb = rgb.astype(np.uint32)
