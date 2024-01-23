@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cloud_type.h"
-
+#include <Eigen/Core>
 #include <pcl/common/pca.h>
 #include <pcl/common/common.h>
 #include <pcl/common/copy_point.h>
@@ -154,7 +154,14 @@ template<typename T>
 void
 computeCentroid(
   const typename pcl::PointCloud<T>::Ptr input,
-  float* centroid);
+  Eigen::Vector3d &centroid);
+
+template<typename T>
+void
+computeMaxR(
+  const typename pcl::PointCloud<T>::Ptr input,
+  const Eigen::Vector3d &centroid,
+  float &max_r);
 
 #include "impl/pcl_func.hpp"
 

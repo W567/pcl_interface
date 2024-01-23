@@ -321,19 +321,34 @@ template<typename T>
 void
 computeCentroid(
     const typename pcl::PointCloud<T>::Ptr input,
-    float* centroid)
+    Eigen::Vector3d &centroid)
 {
-  float x_sum = 0;
-  float y_sum = 0;
-  float z_sum = 0;
+  float x = 0, y = 0, z = 0;
   for (auto& point : input->points)
   {
-    x_sum += point.x;
-    y_sum += point.y;
-    z_sum += point.z;
+    x += point.x;
+    y += point.y;
+    z += point.z;
   }
-  centroid[0] = x_sum / input->size();
-  centroid[1] = y_sum / input->size();
-  centroid[2] = z_sum / input->size();
+  centroid << x / input->size(), y / input->size(), z / input->size();
   return;
+}
+
+template<typename T>
+void
+computeMaxR(
+  const typename pcl::PointCloud<T>::Ptr input,
+  const Eigen::Vector3d &centroid,
+  float &max_r)
+{
+  max_r = 0;
+  float r;
+  for (auto& point : input->points)
+  {
+    r = pow(point.x - centroid(0), 2) +
+        pow(point.y - centroid(1), 2) +
+        pow(point.z - centroid(2), 2);
+    max_r = max_r > r ? max_r : r;
+  }
+  max_r = sqrt(max_r);
 }
