@@ -11,6 +11,10 @@ downsample(
   sor.filter(*output);
 }
 
+/*
+  state: true: remove points in the range
+         false: remove points out of the range (default)
+*/
 template<typename T>
 void
 pass(
@@ -20,12 +24,15 @@ pass(
 {
   pcl::PassThrough<T> pass;
   pass.setInputCloud(input);
-  pass.setFilterFieldName (axis);
-  pass.setFilterLimits (min, max);
-  pass.setFilterLimitsNegative (state);
-  pass.filter (*output);
+  pass.setFilterFieldName(axis);
+  pass.setFilterLimits(min, max);
+  pass.setNegative(state);
+  pass.filter(*output);
 }
 
+/*
+  setViewPoint (float vpx, float vpy, float vpz); can be used to set the viewpoint of the camera.
+*/
 template<typename T>
 void
 estimateNormal(
@@ -34,11 +41,43 @@ estimateNormal(
     const int rangeK)
 {
   pcl::NormalEstimation<T, pcl::Normal> ne;
-  typename pcl::search::KdTree<T>::Ptr tree (new pcl::search::KdTree<T>);
-  ne.setInputCloud (input);
-  ne.setSearchMethod (tree);
-  ne.setKSearch (rangeK);
-  ne.compute (*output_nor);
+  typename pcl::search::KdTree<T>::Ptr tree (new pcl::search::KdTree<T> ());
+  ne.setInputCloud(input);
+  ne.setSearchMethod(tree);
+  ne.setKSearch(rangeK);
+  ne.compute(*output_nor);
+}
+
+template<typename T>
+void
+estimateNormalOMP(
+    const typename pcl::PointCloud<T>::Ptr& input,
+    const pcl::PointCloud<pcl::Normal>::Ptr& output_nor,
+    const int rangeK)
+{
+  pcl::NormalEstimationOMP<T, pcl::Normal> ne;
+  typename pcl::search::KdTree<T>::Ptr tree (new pcl::search::KdTree<T> ());
+  ne.setInputCloud(input);
+  ne.setSearchMethod(tree);
+  ne.setKSearch(rangeK);
+  ne.compute(*output_nor);
+}
+
+template<typename T>
+void
+estimateNormalIntegral(
+    const typename pcl::PointCloud<T>::Ptr& input,
+    const pcl::PointCloud<pcl::Normal>::Ptr& output_nor,
+    const float depth_change_factor,
+    const float normal_smoothing_size)
+{
+  pcl::IntegralImageNormalEstimation<T, pcl::Normal> ne;
+  ne.setInputCloud(input);
+  // COVARIANCE_MATRIX, AVERAGE_DEPTH_CHANGE, AVERAGE_3D_GRADIENT, SIMPLE_3D_GRADIENT
+  ne.setNormalEstimationMethod(ne.AVERAGE_3D_GRADIENT);
+  ne.setMaxDepthChangeFactor(depth_change_factor);
+  ne.setNormalSmoothingSize(normal_smoothing_size);
+  ne.compute(*output_nor);
 }
 
 template<typename T>

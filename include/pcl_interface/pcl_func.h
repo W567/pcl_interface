@@ -2,15 +2,21 @@
 
 #include "cloud_type.h"
 
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/features/integral_image_normal.h>
+
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
 #include <pcl/common/copy_point.h>
 #include <pcl/common/transforms.h>
 #include <pcl/common/pca.h>
-#include <pcl/features/normal_3d.h>
+
 #include <pcl/ModelCoefficients.h>
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/filters/passthrough.h>
+
+
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/project_inliers.h>
 #include <pcl/filters/statistical_outlier_removal.h>
@@ -41,6 +47,21 @@ estimateNormal(
   const typename pcl::PointCloud<T>::Ptr& input,
   const pcl::PointCloud<pcl::Normal>::Ptr& output_nor,
   const int rangeK);
+
+template<typename T>
+void
+estimateNormalOMP(
+    const typename pcl::PointCloud<T>::Ptr& input,
+    const pcl::PointCloud<pcl::Normal>::Ptr& output_nor,
+    const int rangeK);
+
+template<typename T>
+void
+estimateNormalIntegral(
+    const typename pcl::PointCloud<T>::Ptr& input,
+    const pcl::PointCloud<pcl::Normal>::Ptr& output_nor,
+    const float depth_change_factor,
+    const float normal_smoothing_size);
 
 template<typename T>
 void
