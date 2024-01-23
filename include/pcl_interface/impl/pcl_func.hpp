@@ -205,40 +205,6 @@ extractClusters(
   return clusters.size();
 }
 
-template<typename T>
-float
-computeHeight(
-    const typename pcl::PointCloud<T>::Ptr input)
-{
-  float sum = 0;
-  for (auto& point : input->points)
-  {
-    sum += point.z;
-  }
-  return (sum / input->size());
-}
-
-template<typename T>
-void
-computeCentroid(
-    const typename pcl::PointCloud<T>::Ptr input,
-    float* centroid)
-{
-  float x_sum = 0;
-  float y_sum = 0;
-  float z_sum = 0;
-  for (auto& point : input->points)
-  {
-    x_sum += point.x;
-    y_sum += point.y;
-    z_sum += point.z;
-  }
-  centroid[0] = x_sum / input->size();
-  centroid[1] = y_sum / input->size();
-  centroid[2] = z_sum / input->size();
-  return;
-}
-
 template <typename T, typename pT>
 int
 obtainNearest(
@@ -255,33 +221,24 @@ obtainNearest(
   return idx[0];
 }
 
-template <typename T>
-float
-minZ(const typename pcl::PointCloud<T>::Ptr input)
-{
-  float z_min = 1;
-  for (auto& point : input->points)
-  {
-    z_min = z_min < point.z ? z_min : point.z;
-  }
-  return z_min;
-}
-
 template<typename T>
 bool
 icpCloud(
     const typename pcl::PointCloud<T>::Ptr target,
-    const typename pcl::PointCloud<T>::Ptr input)
+    const typename pcl::PointCloud<T>::Ptr input,
+    const int max_iter,
+    const float max_dist,
+    const float score_thre)
 {
   pcl::IterativeClosestPoint<T, T> icp;
   icp.setInputSource(input);
   icp.setInputTarget(target);
-  icp.setMaximumIterations(50);
-  icp.setMaxCorrespondenceDistance(0.01f);
+  icp.setMaximumIterations(max_iter);
+  icp.setMaxCorrespondenceDistance(max_dist);
   icp.align(*input);
-  if (icp.getFitnessScore() < 0.0001)
+  if (icp.getFitnessScore() < score_thre)
   {
-    return true; // succeeded to align
+    return true; // succeeded
   }
   return false;
 }
@@ -324,18 +281,59 @@ widthXY(
   float x_max = -1;
   float y_min = 1;
   float y_max = -1;
-
   for (auto& point : input->points)
   {
     x_min = x_min < point.x ? x_min : point.x;
     x_max = x_max > point.x ? x_max : point.x;
-    
-    // y_min = point.y > 0 ? (point.y > y_min ? y_min : point.y) : y_min;
-    // y_max = point.y < 0 ? (point.y < y_max ? y_max : point.y) : y_max;
     y_min = y_min < point.y ? y_min : point.y;
     y_max = y_max > point.y ? y_max : point.y;
   }
-
   width_x = x_max - x_min;
   width_y = y_max - y_min;
+}
+
+template <typename T>
+float
+minZ(const typename pcl::PointCloud<T>::Ptr input)
+{
+  float z_min = 1;
+  for (auto& point : input->points)
+  {
+    z_min = z_min < point.z ? z_min : point.z;
+  }
+  return z_min;
+}
+
+template<typename T>
+float
+computeHeight(
+    const typename pcl::PointCloud<T>::Ptr input)
+{
+  float sum = 0;
+  for (auto& point : input->points)
+  {
+    sum += point.z;
+  }
+  return (sum / input->size());
+}
+
+template<typename T>
+void
+computeCentroid(
+    const typename pcl::PointCloud<T>::Ptr input,
+    float* centroid)
+{
+  float x_sum = 0;
+  float y_sum = 0;
+  float z_sum = 0;
+  for (auto& point : input->points)
+  {
+    x_sum += point.x;
+    y_sum += point.y;
+    z_sum += point.z;
+  }
+  centroid[0] = x_sum / input->size();
+  centroid[1] = y_sum / input->size();
+  centroid[2] = z_sum / input->size();
+  return;
 }
