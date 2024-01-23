@@ -352,3 +352,24 @@ computeMaxR(
   }
   max_r = sqrt(max_r);
 }
+
+template<typename T>
+bool
+isExist(
+    const typename pcl::PointCloud<T>::Ptr input,
+    std::vector<float> min_max,
+    const int num_threshold)
+{
+  pcl::PointCloud<T>::Ptr left (new pcl::PointCloud<T>);
+  pass<T>(input, left, min_max[0], min_max[1], "x");
+  pass<T>( left, left, min_max[2], min_max[3], "y");
+  pass<T>( left, left, min_max[4], min_max[5], "z");
+  if (left->size() > num_threshold)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}

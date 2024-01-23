@@ -163,5 +163,12 @@ computeMaxR(
   const Eigen::Vector3d &centroid,
   float &max_r);
 
+template<typename T>
+bool
+isExist(
+    const typename pcl::PointCloud<T>::Ptr input,
+    std::vector<float> min_max,
+    const int num_threshold = 0);
+
 #include "impl/pcl_func.hpp"
 
