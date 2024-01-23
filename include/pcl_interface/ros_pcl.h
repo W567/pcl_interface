@@ -1,19 +1,16 @@
 #pragma once
 
 #include "cloud_type.h"
-#include "jsk_recognition_utils/pcl_conversion_util.h"
 
-#include <ros/names.h>
-#include <sensor_msgs/PointCloud2.h>
 #include <tf/tf.h>
-#include <tf_conversions/tf_eigen.h>
-#include <eigen_conversions/eigen_msg.h>
-#include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
-#include <tf2_ros/buffer_client.h>
+#include <tf_conversions/tf_eigen.h>
 #include <pcl_ros/transforms.h>
-#include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/Pose.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <eigen_conversions/eigen_msg.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 
 template <typename T>
 void
@@ -34,15 +31,15 @@ poseMsg2Eigen(
     const geometry_msgs::Pose &m,
     Eigen::Affine3d &e)
 { 
-  // Eigen::Affine3d tmp;
-  tf::poseMsgToEigen(m, e);
-  // e = tmp.cast<float>();
+    tf::poseMsgToEigen(m, e);
 }
 
 void
 poseEigen2Msg(
    Eigen::Affine3d &e,
    geometry_msgs::Pose &m)
-{ tf::poseEigenToMsg(e, m); }
+{
+    tf::poseEigenToMsg(e, m);
+}
 
 #include "impl/ros_pcl.hpp"
