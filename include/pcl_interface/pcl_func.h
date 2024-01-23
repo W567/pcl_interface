@@ -4,9 +4,13 @@
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/integral_image_normal.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/segmentation/extract_clusters.h>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
@@ -17,11 +21,11 @@
 #include <pcl/ModelCoefficients.h>
 
 
-#include <pcl/filters/extract_indices.h>
+
 #include <pcl/filters/project_inliers.h>
-#include <pcl/filters/statistical_outlier_removal.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/segmentation/extract_clusters.h>
+
+
+
 #include <pcl/registration/icp.h>
 
 template<typename T>
@@ -70,7 +74,8 @@ segmentPlane(
   const typename pcl::PointCloud<pcl::Normal>::Ptr& input_nor,
   const pcl::ModelCoefficients::Ptr& coefficients_plane,
   const pcl::PointIndices::Ptr& inliers_plane,
-  const float threshold);
+  const float threshold,
+  const int max_iterations=1000);
 
 template<typename T>
 void

@@ -87,18 +87,19 @@ segmentPlane(
     const typename pcl::PointCloud<pcl::Normal>::Ptr& input_nor,
     const pcl::ModelCoefficients::Ptr& coefficients_plane,
     const pcl::PointIndices::Ptr& inliers_plane,
-    const float threshold)
+    const float threshold,
+    const int max_iterations)
 {
   pcl::SACSegmentationFromNormals<T, pcl::Normal> seg;
-  seg.setOptimizeCoefficients (true);
-  seg.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+  seg.setOptimizeCoefficients(true);
+  seg.setModelType(pcl::SACMODEL_NORMAL_PLANE);
   seg.setNormalDistanceWeight(0.1);
-  seg.setMethodType (pcl::SAC_RANSAC);
-  seg.setMaxIterations (2000);
-  seg.setDistanceThreshold (threshold);
-  seg.setInputCloud (input);
-  seg.setInputNormals (input_nor);
-  seg.segment (*inliers_plane, *coefficients_plane);
+  seg.setMethodType(pcl::SAC_RANSAC);
+  seg.setMaxIterations(max_iterations);
+  seg.setDistanceThreshold(threshold);
+  seg.setInputCloud(input);
+  seg.setInputNormals(input_nor);
+  seg.segment(*inliers_plane, *coefficients_plane);
 }
 
 template<typename T>
@@ -133,6 +134,10 @@ extractPlane(
   extractCloud<T>(input, inliers_plane, plane, false);
 }
 
+/*
+  state: true:  remove points in the inliers
+         false: keep points in the inliers (default)
+*/
 template<typename T>
 void
 extractCloud(
@@ -185,25 +190,19 @@ extractClusters(
   ec.setInputCloud(input);
   ec.extract(cluster_indices);
 
-  int j = 0;
-  for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin();
-       it != cluster_indices.end();
-       ++it)
+  for (const auto& cluster : cluster_indices)
   {
     typename pcl::PointCloud<T>::Ptr cloud_cluster (new pcl::PointCloud<T>);
-    for (std::vector<int>::const_iterator pit = it->indices.begin();
-         pit != it->indices.end();
-         ++pit)
+    for (const auto& idx : cluster.indices)
     {
-      cloud_cluster->points.push_back(input->points[*pit]);
-      cloud_cluster->width = cloud_cluster->points.size ();
-      cloud_cluster->height = 1;
-      cloud_cluster->is_dense = true;
+      cloud_cluster->push_back((*input)[idx]);
     }
+    cloud_cluster->width = cloud_cluster->size();
+    cloud_cluster->height = 1;
+    cloud_cluster->is_dense = true;
     clusters.push_back(cloud_cluster);
-    j++;
   }
-  return j;
+  return clusters.size();
 }
 
 template<typename T>
