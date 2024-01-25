@@ -21,6 +21,13 @@
 #include <pcl/registration/icp.h>
 
 
+float
+inner(const Eigen::Vector3d &v1, const float* v2)
+{
+  return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+}
+
+
 template<typename T>
 void
 downsample(
@@ -37,6 +44,14 @@ pass(
   const float max,
   const std::string axis,
   const bool state=false);
+
+template<typename T>
+void
+passWithNormal(
+    const typename pcl::PointCloud<T>::Ptr &input,
+    const typename pcl::PointCloud<T>::Ptr &output,
+    const Eigen::Vector3d &normal,
+    const float min, const float max, const std::string axis, const float nor_thre);
 
 template<typename T>
 void

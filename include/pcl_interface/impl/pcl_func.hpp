@@ -31,6 +31,57 @@ pass(
 }
 
 /*
+  passthrough filter with normal comparison
+  points outside of the range or with normal intersection angle larger than nor_thre will be kept
+*/
+template<typename T>
+void
+passWithNormal(
+    const typename pcl::PointCloud<T>::Ptr &input,
+    const typename pcl::PointCloud<T>::Ptr &output,
+    const Eigen::Vector3d &normal,
+    const float min, const float max, const std::string axis, const float nor_thre)
+{
+  typename pcl::PointCloud<T>::Ptr tmp (new pcl::PointCloud<T>);
+  if (axis == "x")
+  {
+    for (const auto& point : input->points)
+    {
+      if (point.x < min || point.x > max || abs(std::acos(inner(normal, point.normal))) > nor_thre)
+      {
+        tmp->points.push_back(point);
+      }
+    }
+  }
+  else if (axis == "y")
+  {
+    for (const auto& point : input->points)
+    {
+      if (point.y < min || point.y > max || abs(std::acos(inner(normal, point.normal))) > nor_thre)
+      {
+        tmp->points.push_back(point);
+      }
+    }
+  }
+  else if (axis == "z")
+  {
+    for (const auto& point : input->points)
+    {
+      if (point.z < min || point.z > max || abs(std::acos(inner(normal, point.normal))) > nor_thre)
+      {
+        tmp->points.push_back(point);
+      }
+    }
+  }
+  else
+  {
+    std::cout << "Error: axis must be x, y or z" << std::endl;
+    return;
+  }
+  *output = *tmp;
+}
+
+/*
   setViewPoint (float vpx, float vpy, float vpz); can be used to set the viewpoint of the camera.
 */
 template<typename T>
