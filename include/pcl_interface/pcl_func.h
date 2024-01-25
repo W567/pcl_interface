@@ -2,6 +2,7 @@
 
 #include "cloud_type.h"
 #include <Eigen/Core>
+#include <pcl/io/pcd_io.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/common.h>
 #include <pcl/common/copy_point.h>
