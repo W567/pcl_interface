@@ -3,10 +3,9 @@
   <name>pcl_interface</name>
   <version>0.0.1</version>
   <description>The pcl_interface package</description>
-
-  <maintainer email="wu@jsk.imi.i.u-tokyo.ac.jp">wu</maintainer>
-
-  <license>TODO</license>
+  <maintainer email="wu@jsk.imi.i.u-tokyo.ac.jp">Liqi Wu</maintainer>
+  <license>Apache-2.0</license>
+  <author>Liqi Wu</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   
@@ -22,9 +21,4 @@
 
   <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
-
-  <!-- The export tag contains other, unspecified, tags -->
-  <export>
-    <!-- Other tools can request additional information be placed here -->
-  </export>
 </package>
