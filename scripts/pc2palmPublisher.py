@@ -19,6 +19,7 @@ class pc2palmPublisher(pcPubBase):
         # tf from base to palm
         self.palm_rot = np.eye(4)
         self.palm_rot[:3, :3] = R.from_euler('x', -90, degrees=True).as_matrix()
+        self.palm_rot[:3, :3] = R.from_euler('y', -90, degrees=True).as_matrix() @ self.palm_rot[:3, :3]
 
         self.br = tf.TransformBroadcaster()
 
