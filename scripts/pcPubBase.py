@@ -19,6 +19,10 @@ class pcPubBase():
 
         if rospy.has_param("~pc_filenames"):
             self.pc_filenames = rospy.get_param("~pc_filenames")
+            pc_file_package = rospy.get_param("~pc_package", None)
+            if pc_file_package != None:
+                package_path = rospack.get_path(pc_file_package) + '/'
+                self.pc_filenames = [package_path + filename for filename in self.pc_filenames]
             self.pc_filename_prefix = None
             self.sub_pc_topics = None
         elif rospy.has_param("~pc_filename_prefix"):
