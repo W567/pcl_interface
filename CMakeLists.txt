@@ -33,14 +33,13 @@ generate_messages(
   )
 
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
   CATKIN_DEPENDS message_runtime sensor_msgs geometry_msgs
                  pcl_ros pcl_conversions eigen_conversions 
                  tf tf2_ros tf_conversions
   )
 
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
