@@ -1,4 +1,4 @@
 - git:
     local-name: 3rdparty/curvature_computation
     uri: git@github.com:W567/curvature_computation.git
-    version: master
+    version: main
