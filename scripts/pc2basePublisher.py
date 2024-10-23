@@ -16,8 +16,9 @@ class pc2basePublisher(pcPubBase):
     def __init__(self):
         super().__init__()
         self.obj_name = rospy.get_param('~mj_obj_name', 'object')
-        self.obj_base_frame = rospy.get_param('~obj_base_frame', 'base_link')
-        
+        self.robot_base_frame = rospy.get_param('robot_base_frame')
+        self.pc_frame = self.robot_base_frame
+
         rospy.Subscriber("/robot_base_pose", Pose, self.base_pose_callback, queue_size=1)
         rospy.Subscriber("/mujoco_joint_states", JointState, self.callback, queue_size=1)
 
@@ -52,7 +53,7 @@ class pc2basePublisher(pcPubBase):
                               (quat[0], quat[1], quat[2], quat[3]),
                               rospy.Time.now(),
                               self.obj_name,
-                              self.obj_base_frame)
+                              self.robot_base_frame)
 
 
     def pcd_process(self, pcd):

@@ -10,7 +10,11 @@ class tfPubServer():
         rate = rospy.get_param("~rate", 10)
         self.rate = rospy.Rate(rate)
 
-        self.parent_frame = rospy.get_param('~parent_frame')
+        if rospy.has_param("~parent_frame"):
+            self.parent_frame = rospy.get_param('~parent_frame')
+        else:
+            self.parent_frame = rospy.get_param('robot_base_frame')
+            rospy.logwarn("[tfPubServer] No parent_frame given, using robot_base_frame")
         self.child_frame = rospy.get_param('~child_frame')
 
         self.server = rospy.Service('palm_tf_pub', poseTF, self.poseCB)

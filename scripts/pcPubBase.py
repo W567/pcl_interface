@@ -48,7 +48,7 @@ class pcPubBase():
         if rospy.has_param("~pc_frame"):
             self.pc_frame = rospy.get_param("~pc_frame")
         else:
-            rospy.logerr("[pcPubBase] No pc_frame")
+            self.pc_frame = None
         
         self.pc_colors = rospy.get_param("~pc_colors", [[1.0, 0.0, 0.0],
                                                         [0.0, 1.0, 0.0],
@@ -104,6 +104,8 @@ class pcPubBase():
 
 
     def init_pc_pub(self):
+        if self.pc_frame == None:
+            raise ValueError("[pcPubBase] pc_frame not set")
         for pc_topic in self.pc_topics:
             pc_pub = rospy.Publisher(pc_topic, PointCloud2, queue_size=1, latch=True)
             self.pc_pub_list.append(pc_pub)

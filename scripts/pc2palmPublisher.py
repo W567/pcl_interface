@@ -14,7 +14,7 @@ class pc2palmPublisher(pcPubBase):
     # is always parallel to the ground/table
     def __init__(self):
         super().__init__()
-        self.base_frame = rospy.get_param('~base_frame', 'base')
+        self.base_frame = rospy.get_param('robot_base_frame')
 
         # tf from base to palm
         self.palm_rot = np.eye(4)
