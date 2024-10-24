@@ -14,26 +14,17 @@ class pcCurvServer():
         rate = rospy.get_param("~rate", 30)
         self.rate = rospy.Rate(rate)
 
+        self.pcd = o3d.geometry.PointCloud()
+
         self.with_pub = rospy.get_param("~with_pub", True)
-        if self.with_pub:
-            self.pc_header = Header()
-            self.pc_header.frame_id = rospy.get_param("palm_frame", 'ik_palm')
+        self.pc_header = Header()
+        self.pc_header.frame_id = rospy.get_param("palm_frame", 'ik_palm')
 
-            self.pcd = o3d.geometry.PointCloud()
-
-        self.init_server(curvFilter)
+        self.server = rospy.Service('curv_filter', curvFilter, self.callback)
         self.response = curvFilterResponse()
         self.response.output_pcd = None
 
-
-    def init_server(self, srv_type):
-        if isinstance(srv_type, type):
-            srv_name = rospy.get_param("~srv_name")
-            self.server = rospy.Service(srv_name, srv_type, self.callback)
-            rospy.loginfo("[pcCurvServer] Server initialized")
-        else:
-            raise TypeError("[pcCurvServer] srv_type must be a service class type")
-
+        rospy.loginfo("[pcCurvServer] Ready to filter point cloud with curvature")
 
     def callback(self, req):
         if self.with_pub:
@@ -52,7 +43,6 @@ class pcCurvServer():
         self.pcd.paint_uniform_color([0, 0, 1])
         self.response.output_pcd = o3d2pc2(self.pcd, self.pc_header)
         return self.response
-
 
     def execute(self):
         if self.with_pub:
