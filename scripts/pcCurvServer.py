@@ -17,7 +17,7 @@ class pcCurvServer():
         self.with_pub = rospy.get_param("~with_pub", True)
         if self.with_pub:
             self.pc_header = Header()
-            self.pc_header.frame_id = rospy.get_param("~pc_frame")
+            self.pc_header.frame_id = rospy.get_param("palm_frame", 'ik_palm')
 
             self.pcd = o3d.geometry.PointCloud()
 
