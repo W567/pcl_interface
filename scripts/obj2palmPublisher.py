@@ -1,15 +1,16 @@
 #!/usr/bin/env python
+import os
 import tf
 import rospy
 import numpy as np
 from copy import deepcopy
-from objPcPublisher import objPcPublisher
+from pcPubBase import pcPubBase
 from scipy.spatial.transform import Rotation as R
 
 import rospkg
 rospack = rospkg.RosPack()
 
-class obj2palmPublisher(objPcPublisher):
+class obj2palmPublisher(pcPubBase):
     # It is supposed in this script that the robot base (x-o-y plane)
     # is always parallel to the ground/table
     def __init__(self):
@@ -29,6 +30,20 @@ class obj2palmPublisher(objPcPublisher):
 
         self.pc_topics = [f"palm_{pc_topic}" for pc_topic in self.pc_topics]
         self.pc_frames = [palm_frame for _ in self.pc_topics]
+
+    def init_file_topic_frame(self):
+        while True:
+            if rospy.has_param("free_body_names"):
+                self.pc_filenames = rospy.get_param("free_body_names")
+                self.pc_file_paths = self.pc_filenames.copy()
+                package_path = os.path.join(rospack.get_path('obj_models'), 'obj')
+                self.pc_file_paths = [f"{package_path}/{filename}.pcd" for filename in self.pc_file_paths]
+                break
+            else:
+                rospy.sleep(0.016)
+
+        self.pc_topics = self.pc_filenames.copy()
+        self.pc_frames = self.pc_filenames.copy()
 
     def pcd_process(self, pcd, i):
         frame = self.pc_frames_orig[i]

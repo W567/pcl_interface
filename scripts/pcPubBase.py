@@ -37,10 +37,14 @@ class pcPubBase():
 
     def init_pc_read(self):
         for i in range(len(self.pc_file_paths)):
-            pcd = o3d.io.read_point_cloud(self.pc_file_paths[i])
-            if len(np.asarray(pcd.colors)) == 0:
-                pcd.paint_uniform_color(self.pc_colors[self.color_id])
-                self.color_id += 1
+            try:
+                pcd = o3d.io.read_point_cloud(self.pc_file_paths[i])
+                if len(np.asarray(pcd.colors)) == 0:
+                    pcd.paint_uniform_color(self.pc_colors[self.color_id])
+                    self.color_id += 1
+            except Exception as e:
+                pcd = None
+                rospy.logwarn(f"[pcPubBase] Failed to read {self.pc_file_paths[i]}")
             self.pcd_list.append(pcd)
 
     def init_pc_pub(self):
