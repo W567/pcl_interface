@@ -54,10 +54,10 @@ class obj2palmPublisher(objPcPublisher):
         # pcd under object_bot/palm coordinate system
         pcd_palm = deepcopy(pcd_robot_base).transform(palm2obj_base)
 
-        # frame2obj_base = robot_base2obj_base @ frame2robot_base
-        obj_base2frame = np.linalg.inv(robot_base2obj_base @ frame2robot_base)
-        pos = obj_base2frame[:3, 3]
-        quat = R.from_matrix(obj_base2frame[:3, :3]).as_quat()
+        # bot frame orientation is same to that of the palm frame
+        frame2obj_base = np.linalg.inv(palm2obj_base @ frame2robot_base)
+        pos = frame2obj_base[:3, 3]
+        quat = R.from_matrix(frame2obj_base[:3, :3]).as_quat()
         self.br.sendTransform((pos[0], pos[1], pos[2]),
                               (quat[0], quat[1], quat[2], quat[3]),
                               rospy.Time.now(),
