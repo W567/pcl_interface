@@ -2,17 +2,42 @@
 import rospy
 import open3d as o3d
 from pcBase import *
-from pcSrvBase import pcSrvBase
+from std_msgs.msg import Header
+from sensor_msgs.msg import PointCloud2
 from pcl_interface.srv import curvFilter, curvFilterResponse
 import curvature_computation as cc
 
-class pcCurvServer(pcSrvBase):
+class pcCurvServer():
 
     def __init__(self):
-        super().__init__()
+        rospy.init_node('pcCurvServer', anonymous=True)
+        rate = rospy.get_param("~rate", 30)
+        self.rate = rospy.Rate(rate)
+
+        self.with_pub = rospy.get_param("~with_pub", True)
+        if self.with_pub:
+            pc_topic = rospy.get_param("~pc_topic")
+            pc_frame = rospy.get_param("~pc_frame")
+            self.pc_color = rospy.get_param("~pc_color", [1, 1, 1])
+
+            self.pc_pub = rospy.Publisher(pc_topic, PointCloud2, queue_size=1, latch=True)
+            self.pc_header = Header()
+            self.pc_header.frame_id = pc_frame
+
+            self.pcd = o3d.geometry.PointCloud()
+
         self.init_server(curvFilter)
         self.response = curvFilterResponse()
         self.response.output_pcd = None
+
+
+    def init_server(self, srv_type):
+        if isinstance(srv_type, type):
+            srv_name = rospy.get_param("~srv_name")
+            self.server = rospy.Service(srv_name, srv_type, self.callback)
+            rospy.loginfo("[pcCurvServer] Server initialized")
+        else:
+            raise TypeError("[pcCurvServer] srv_type must be a service class type")
 
 
     def callback(self, req):
