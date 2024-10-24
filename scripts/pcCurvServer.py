@@ -16,13 +16,8 @@ class pcCurvServer():
 
         self.with_pub = rospy.get_param("~with_pub", True)
         if self.with_pub:
-            pc_topic = rospy.get_param("~pc_topic")
-            pc_frame = rospy.get_param("~pc_frame")
-            self.pc_color = rospy.get_param("~pc_color", [1, 1, 1])
-
-            self.pc_pub = rospy.Publisher(pc_topic, PointCloud2, queue_size=1, latch=True)
             self.pc_header = Header()
-            self.pc_header.frame_id = pc_frame
+            self.pc_header.frame_id = rospy.get_param("~pc_frame")
 
             self.pcd = o3d.geometry.PointCloud()
 
@@ -41,6 +36,10 @@ class pcCurvServer():
 
 
     def callback(self, req):
+        if self.with_pub:
+            pc_topic = req.input_pc_topic + "_filtered"
+            self.pc_pub = rospy.Publisher(pc_topic, PointCloud2, queue_size=1, latch=True)
+
         np_cloud_dict = pc22np(req.input_pcd)
         if np_cloud_dict == None:
             rospy.logerr("[pcCurvServer] Invalid PointCloud2 message")
