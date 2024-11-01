@@ -32,18 +32,26 @@ class obj2palmPublisher(pcPubBase):
         self.pc_frames = [palm_frame for _ in self.pc_topics]
 
     def init_file_topic_frame(self):
+        self.with_aff = rospy.get_param("with_aff", False)
+        ext = rospy.get_param("aff_ext", "_aff0")
         while True:
             if rospy.has_param("free_body_names"):
-                self.pc_filenames = rospy.get_param("free_body_names")
-                self.pc_file_paths = self.pc_filenames.copy()
+                pc_filenames = rospy.get_param("free_body_names")
+                self.pc_filenames = []
+                self.pc_frames = []
+                for pc_filename in pc_filenames:
+                    self.pc_filenames.append(pc_filename)
+                    self.pc_frames.append(pc_filename)
+                    if self.with_aff:
+                        self.pc_filenames.append(f"{pc_filename}{ext}")
+                        self.pc_frames.append(pc_filename)
+
+                self.pc_topics = self.pc_filenames.copy()
                 package_path = os.path.join(rospack.get_path('obj_models'), 'obj')
-                self.pc_file_paths = [f"{package_path}/{filename}.pcd" for filename in self.pc_file_paths]
+                self.pc_file_paths = [f"{package_path}/{filename}.pcd" for filename in self.pc_filenames]
                 break
             else:
                 rospy.sleep(0.016)
-
-        self.pc_topics = self.pc_filenames.copy()
-        self.pc_frames = self.pc_filenames.copy()
 
     def pcd_process(self, pcd, i):
         frame = self.pc_frames_orig[i]
@@ -69,15 +77,18 @@ class obj2palmPublisher(pcPubBase):
         # pcd under object_bot/palm coordinate system
         pcd_palm = deepcopy(pcd_robot_base).transform(palm2obj_base)
 
-        # bot frame orientation is same to that of the palm frame
-        frame2obj_base = np.linalg.inv(palm2obj_base @ frame2robot_base)
-        pos = frame2obj_base[:3, 3]
-        quat = R.from_matrix(frame2obj_base[:3, :3]).as_quat()
-        self.br.sendTransform((pos[0], pos[1], pos[2]),
-                              (quat[0], quat[1], quat[2], quat[3]),
-                              rospy.Time.now(),
-                              f"{frame}_bot",
-                              frame)
+        if self.with_aff and i % 2 == 1:
+            pass
+        else:
+            # bot frame orientation is same to that of the palm frame
+            frame2obj_base = np.linalg.inv(palm2obj_base @ frame2robot_base)
+            pos = frame2obj_base[:3, 3]
+            quat = R.from_matrix(frame2obj_base[:3, :3]).as_quat()
+            self.br.sendTransform((pos[0], pos[1], pos[2]),
+                                  (quat[0], quat[1], quat[2], quat[3]),
+                                  rospy.Time.now(),
+                                  f"{frame}_bot",
+                                  frame)
 
         return pcd_palm
 
