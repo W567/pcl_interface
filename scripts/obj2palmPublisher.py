@@ -30,6 +30,9 @@ class obj2palmPublisher(pcPubBase):
         self.pc_topics = [f"palm_{pc_topic}" for pc_topic in self.pc_topics]
         self.pc_frames = [palm_frame for _ in self.pc_topics]
 
+        self.frame2world = np.eye(4)
+        self.palm2obj_bot = np.eye(4)
+
     def init_file_topic_frame(self):
         self.with_aff = rospy.get_param("with_aff", False)
         ext = rospy.get_param("aff_ext", "_aff0")
@@ -52,8 +55,8 @@ class obj2palmPublisher(pcPubBase):
             else:
                 rospy.sleep(0.016)
 
-    def pcd_process(self, pcd, i):
-        frame = self.pc_frames_orig[i]
+
+    def common_process(self, pcd, frame):
         try:
             (_,rot) = self.listener.lookupTransform("world", frame, rospy.Time(0))
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -62,9 +65,9 @@ class obj2palmPublisher(pcPubBase):
 
         # pcd read from file is under world coordinate system by default
         # rotate the point cloud to met the actual orientation (object self frame)
-        frame2world = np.eye(4)
-        frame2world[:3, :3] = R.from_quat(rot).as_matrix()
-        pcd_world = deepcopy(pcd).transform(frame2world)
+        self.frame2world = np.eye(4)
+        self.frame2world[:3, :3] = R.from_quat(rot).as_matrix()
+        pcd_world = deepcopy(pcd).transform(self.frame2world)
 
         # pcd under world coordinate system
         center = -pcd_world.get_center()
@@ -73,18 +76,29 @@ class obj2palmPublisher(pcPubBase):
         world2obj_bot = np.eye(4)
         world2obj_bot[:3, 3] = center
         # translate above z axis and rotate to palm frame
-        palm2obj_bot = self.world2palm @ world2obj_bot
+        self.palm2obj_bot = self.world2palm @ world2obj_bot
         # pcd under object_bot/palm coordinate system
-        pcd_palm = deepcopy(pcd_world).transform(palm2obj_bot)
+        pcd_palm = deepcopy(pcd_world).transform(self.palm2obj_bot)
 
-        if self.with_aff and i % 2 == 1:
-            pass
+        bot_pos = np.linalg.inv(self.frame2world[:3, :3]) @ -center
+        # rotate to have the orientation of the object bottom frame to be same with palm frame
+        bot_quat = R.from_matrix(np.linalg.inv(self.world2palm[:3, :3] @ self.frame2world[:3, :3])).as_quat()
+        self.br.sendTransform(bot_pos, bot_quat, rospy.Time.now(), f"{frame}_bot", frame)
+
+        return pcd_palm
+
+
+    def pcd_process(self, pcd, i):
+        frame = self.pc_frames_orig[i]
+        if self.with_aff:
+            if i % 2 == 0:
+                pcd_palm = self.common_process(pcd, frame)
+            else:
+                # Use same transformation between full cloud and partial cloud
+                pcd_world = deepcopy(pcd).transform(self.frame2world)
+                pcd_palm = deepcopy(pcd_world).transform(self.palm2obj_bot)
         else:
-            # translation under object frame
-            bot_pos = np.linalg.inv(frame2world[:3, :3]) @ -center
-            # rotate to have the orientation of the object bottom frame to be same with palm frame
-            bot_quat = R.from_matrix(np.linalg.inv(self.world2palm[:3, :3] @ frame2world[:3, :3])).as_quat()
-            self.br.sendTransform(bot_pos, bot_quat, rospy.Time.now(), f"{frame}_bot", frame)
+            pcd_palm = self.common_process(pcd, frame)
 
         return pcd_palm
 
