@@ -15,11 +15,10 @@ class obj2palmPublisher(pcPubBase):
     # is always parallel to the ground/table
     def __init__(self):
         super().__init__()
-        self.robot_base_frame = rospy.get_param('robot_base_frame')
 
         # tf from base to palm
-        self.palm2robot_base = np.eye(4)
-        self.palm2robot_base[:3, :3] = (R.from_euler('y', -90, degrees=True).as_matrix() @
+        self.world2palm = np.eye(4)
+        self.world2palm[:3, :3] = (R.from_euler('y', -90, degrees=True).as_matrix() @
                                         R.from_euler('x', -90, degrees=True).as_matrix())
 
         self.br = tf.TransformBroadcaster()
@@ -56,39 +55,36 @@ class obj2palmPublisher(pcPubBase):
     def pcd_process(self, pcd, i):
         frame = self.pc_frames_orig[i]
         try:
-            (pos,rot) = self.listener.lookupTransform(self.robot_base_frame, frame, rospy.Time(0))
+            (_,rot) = self.listener.lookupTransform("world", frame, rospy.Time(0))
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            rospy.logwarn(f"[obj2palmPublisher] Failed to get transform from {frame} to {self.robot_base_frame}")
+            rospy.logwarn_once(f"[obj2palmPublisher] Failed to get tf from /world to {frame}")
             return None
 
-        frame2robot_base = np.eye(4)
-        frame2robot_base[:3, 3] = pos
-        frame2robot_base[:3, :3] = R.from_quat(rot).as_matrix()
-        pcd_robot_base = deepcopy(pcd).transform(frame2robot_base)
+        # pcd read from file is under world coordinate system by default
+        # rotate the point cloud to met the actual orientation (object self frame)
+        frame2world = np.eye(4)
+        frame2world[:3, :3] = R.from_quat(rot).as_matrix()
+        pcd_world = deepcopy(pcd).transform(frame2world)
 
-        # pcd under base coordinate system
-        center = -pcd_robot_base.get_center()
-        center[2] = -pcd_robot_base.get_min_bound()[2]
-        # tf from object_bot to base
-        robot_base2obj_base = np.eye(4)
-        robot_base2obj_base[:3, 3] = center
-        # tf from object_bot to palm
-        palm2obj_base = self.palm2robot_base @ robot_base2obj_base
+        # pcd under world coordinate system
+        center = -pcd_world.get_center()
+        center[2] = -pcd_world.get_min_bound()[2]
+        # tf from world to object_bot
+        world2obj_bot = np.eye(4)
+        world2obj_bot[:3, 3] = center
+        # translate above z axis and rotate to palm frame
+        palm2obj_bot = self.world2palm @ world2obj_bot
         # pcd under object_bot/palm coordinate system
-        pcd_palm = deepcopy(pcd_robot_base).transform(palm2obj_base)
+        pcd_palm = deepcopy(pcd_world).transform(palm2obj_bot)
 
         if self.with_aff and i % 2 == 1:
             pass
         else:
-            # bot frame orientation is same to that of the palm frame
-            frame2obj_base = np.linalg.inv(palm2obj_base @ frame2robot_base)
-            pos = frame2obj_base[:3, 3]
-            quat = R.from_matrix(frame2obj_base[:3, :3]).as_quat()
-            self.br.sendTransform((pos[0], pos[1], pos[2]),
-                                  (quat[0], quat[1], quat[2], quat[3]),
-                                  rospy.Time.now(),
-                                  f"{frame}_bot",
-                                  frame)
+            # translation under object frame
+            bot_pos = np.linalg.inv(frame2world[:3, :3]) @ -center
+            # rotate to have the orientation of the object bottom frame to be same with palm frame
+            bot_quat = R.from_matrix(np.linalg.inv(self.world2palm[:3, :3] @ frame2world[:3, :3])).as_quat()
+            self.br.sendTransform(bot_pos, bot_quat, rospy.Time.now(), f"{frame}_bot", frame)
 
         return pcd_palm
 
