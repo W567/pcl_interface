@@ -24,7 +24,7 @@ class pcPubServer(pcPubBase):
         else:
             rospy.logerr("[pcPubBase] No pc_filename_prefix")
 
-        self.pc_frame = rospy.get_param('pc_frame', 'palm_candidate')
+        self.pc_frame = rospy.get_param('~pc_frame', 'palm_candidate')
 
         self.pc_topics = rospy.get_param("~pc_topics", [])
         self.pc_topic_prefix = rospy.get_param("~pc_topic_prefix", None)
